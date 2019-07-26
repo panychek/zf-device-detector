@@ -5,6 +5,7 @@ namespace ZfDeviceDetector\Service;
 use DeviceDetector\DeviceDetector;
 use Interop\Container\ContainerInterface;
 use Zend\Console\Request as ConsoleRequest;
+use Zend\Http\Header\UserAgent;
 use Zend\Http\PhpEnvironment\Request;
 use Zend\ServiceManager\Exception\ServiceNotCreatedException;
 use Zend\ServiceManager\Factory\FactoryInterface;
@@ -26,12 +27,17 @@ class DeviceDetectorFactory implements FactoryInterface
             throw new ServiceNotCreatedException($message);
         }
 
+        $userAgent = '';
+
         /** @var ConsoleRequest|Request $request */
         $request = $container->get(self::REQUEST_SERVICE_NAME);
 
-        $userAgent = '';
         if ($request instanceof Request) {
-            $userAgent = $request->getHeader('user-agent')->getFieldValue();
+            /** @var UserAgent|false $userAgentHeader */
+            $userAgentHeader = $request->getHeader('user-agent');
+            if ($userAgentHeader) {
+                $userAgent = $userAgentHeader->getFieldValue();
+            }
         }
 
         $deviceDetector = new DeviceDetector($userAgent);
